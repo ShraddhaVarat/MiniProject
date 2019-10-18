@@ -1,0 +1,208 @@
+ <!DOCTYPE html>
+<html lang="en-US">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<head>
+  
+<style type="text/css">
+  
+ body {
+    background-image: url(24.jpg);
+    background-position: center; 
+    background-repeat: no-repeat;
+      }
+
+#margin {
+	margin-left:12px;
+	margin-bottom:20px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none; 
+}
+
+#ta {
+	width:500px;
+	overflow:hidden;
+	background-color:#FFF;
+	color:#222;
+	font-family:Courier, monospace;
+	font-weight:normal;
+	font-size:24px;
+	resize:none;
+	line-height:40px;
+	padding-left:100px;
+	padding-right:100px;
+	padding-top:45px;
+	padding-bottom:34px;
+	background-image:url(25.jpg);
+	background-position: center; 
+	background-repeat:repeat-y, repeat;
+	-webkit-border-radius:12px;
+	border-radius:12px;
+	-webkit-box-shadow: 0px 2px 14px #000;
+	box-shadow: 0px 2px 14px #000;
+	border-top:1px solid #FFF;
+	border-bottom:1px solid #FFF;
+}
+
+#wrapper {
+	width:700px;
+	height:auto;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:24px;
+	margin-bottom:100px;
+}
+
+h2 {
+  margin: 1em 0 0.5em 0;
+  color: white;
+  font-weight: normal;
+  font-family: 'Ultra', sans-serif;   
+  font-size: 32px;
+  line-height: 30px;
+}
+
+.sandbox-correct-pronounciation {
+  padding: 3em 0 3em 0;
+}
+
+.heading-correct-pronounciation {
+  margin: auto;
+  text-align: center;
+  position: relative;
+}
+
+h1 {
+  color: white;
+  font-family: 'Cardo', serif;
+  font-size: 1em;
+  font-weight: normal;
+  font-style: italic;
+  letter-spacing: 0.1em;
+  line-height: 2.2em;
+}
+
+em {
+  font-family: 'EB Garamond', serif;
+  font-size: 3.5em;
+  letter-spacing: 0.1em;
+  display: block;
+  font-style:normal;
+  padding-top: 0.1em;
+  text-shadow: 0.07em 0.07em 0 rgba(0, 0, 0, 0.1);
+  
+  &::before, &::after {
+  content: "§";
+  display: inline-block;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+    opacity: 0.2;
+  margin: 0 0.6em;
+  font-size: 0.5em;
+}
+
+}
+</style>
+</head>
+
+<body>
+<script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.2.0/firebase-database.js"></script>
+
+<script>
+  var config = {
+    apiKey: "AIzaSyBqA7_VWi3PixA0nVdqdPKKOv1yZ3UpTL8",
+    authDomain: "text-editor-dc01c.firebaseapp.com",
+    databaseURL: "https://text-editor-dc01c.firebaseio.com",
+    projectId: "text-editor-dc01c",
+    storageBucket: " ",
+    messagingSenderId: "550331945834",
+  };
+  firebase.initializeApp(config);
+</script>
+
+<center>
+<div class="sandbox sandbox-correct-pronounciation">
+  <h1 class="heading heading-correct-pronounciation">
+    <em>Distributed Editor</em>
+  </h1>
+</div>
+</center>
+
+<center> 
+<div ng-app="myApp" ng-controller="myCtrl">  
+<h2>Your I.P is     :  <span id="ip"></span> </h2>
+<h2>Last edited by (I.P) :  <span id="ip1"></span> </h2> 
+
+<p>
+	<textarea id="ta" name="text" rows="6" style="overflow: hidden; word-wrap: break-word; resize: none; height: 500px;" ng-keypress="funct()" ng-model="name" class="edit"> 
+	</textarea>
+</p>
+</div>
+</center>
+
+
+<script>
+		var ab = document.getElementById("ta");
+		
+		var ref = firebase.database().ref('/SharedData/');
+		ref.on('value', function(snapshot) 
+		{
+				ab.value =  snapshot.val();
+				var app = angular.module('myApp', []);
+				app.controller('myCtrl', function($scope)
+				{
+						$scope.name = snapshot.val();    
+				});
+		});    
+
+		var ref = firebase.database().ref('/LastEdited/');
+		ref.on('value', function(snapshot) 
+		{
+				document.getElementById("ip1").innerText =  snapshot.val();
+		});        
+</script>
+
+
+<script>
+		var asd = null;
+		window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+		var pc = new RTCPeerConnection({iceServers:[]}), noop = function(){};      
+		pc.createDataChannel('');
+		pc.createOffer(pc.setLocalDescription.bind(pc), noop);
+		pc.onicecandidate = function(ice)
+		{
+				if (ice && ice.candidate && ice.candidate.candidate)
+ 				{
+  					var myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
+  					asd = myIP;
+					  document.getElementById("ip").innerText = asd;
+					  pc.onicecandidate = noop;
+				}
+		};
+
+		var firebaseRef = firebase.database().ref();
+		var data = null;
+		var app = angular.module('myApp', []);
+		
+		app.controller('myCtrl', function($scope) 
+		{	
+			$scope.funct = function() 
+			{
+					var ab = document.getElementById("ta").value;
+					data = ab ;
+					firebaseRef.set({ SharedData : data});
+
+					var id = document.getElementById("ip").value;
+			    firebaseRef.child("LastEdited").set(asd);
+	
+			}    
+		});
+</script>
+</body>
+</html> 
